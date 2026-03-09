@@ -1,0 +1,288 @@
+{
+  "healthcheck": {
+    "request": {
+      "method": "GET",
+      "url": "/api/health"
+    },
+    "response_200": {
+      "status": "ok",
+      "service": "dashboard-backend",
+      "port": 3001,
+      "offline_timeout_ms": 90000
+    }
+  },
+  "listar_equipamentos": {
+    "request": {
+      "method": "GET",
+      "url": "/api/equipamentos"
+    },
+    "response_200": [
+      {
+        "id": 1,
+        "nome": "Bomba de Infusão 402",
+        "codigo": "BOMBA-INFUSAO-402",
+        "patrimonio": "PAT-000402",
+        "setor": "UTI Adulto",
+        "descricao": "Bomba de infusão vinculada ao botão ESP32 da UTI Adulto",
+        "status_atual": "funcional",
+        "codigo_estado_atual": 0,
+        "conectividade": "online",
+        "ultimo_evento_em": "2026-03-05 12:00:00",
+        "ultimo_heartbeat_em": "2026-03-05 12:00:00",
+        "device_id": "BTN-ESP32-402",
+        "dispositivo_descricao": "Botão IoT da bomba de infusão 402"
+      }
+    ]
+  },
+  "cadastrar_equipamento": {
+    "request": {
+      "method": "POST",
+      "url": "/api/equipamentos",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": {
+        "nome": "Monitor Multiparamétrico 101",
+        "codigo": "MONITOR-101",
+        "patrimonio": "PAT-000101",
+        "setor": "Sala Vermelha",
+        "descricao": "Monitor multiparamétrico para acompanhamento clínico"
+      }
+    },
+    "response_201": {
+      "message": "Equipamento cadastrado com sucesso.",
+      "id": 2
+    }
+  },
+  "vincular_dispositivo": {
+    "request": {
+      "method": "POST",
+      "url": "/api/equipamentos/1/vincular-dispositivo",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": {
+        "device_id": "BTN-ESP32-402",
+        "descricao": "Botão IoT instalado no equipamento"
+      }
+    },
+    "response_201": {
+      "message": "Dispositivo vinculado com sucesso.",
+      "dispositivo_id": 1,
+      "equipamento": {
+        "id": 1,
+        "nome": "Bomba de Infusão 402",
+        "codigo": "BOMBA-INFUSAO-402"
+      },
+      "device_id": "BTN-ESP32-402"
+    }
+  },
+  "receber_evento_status": {
+    "request": {
+      "method": "POST",
+      "url": "/api/iot/eventos",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": {
+        "device_id": "BTN-ESP32-402",
+        "evento": "status_equipamento",
+        "codigo_estado": 2,
+        "status": "indisponivel_prioridade",
+        "conectividade": "online",
+        "ip": "192.168.0.50",
+        "rssi": -58,
+        "uptime_ms": 123456
+      }
+    },
+    "response_201": {
+      "message": "Evento recebido com sucesso.",
+      "evento_id": 10,
+      "equipamento": {
+        "id": 1,
+        "nome": "Bomba de Infusão 402",
+        "codigo": "BOMBA-INFUSAO-402"
+      }
+    }
+  },
+  "receber_heartbeat": {
+    "request": {
+      "method": "POST",
+      "url": "/api/iot/eventos",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": {
+        "device_id": "BTN-ESP32-402",
+        "evento": "heartbeat",
+        "conectividade": "online",
+        "ip": "192.168.0.50",
+        "rssi": -55,
+        "uptime_ms": 130000
+      }
+    },
+    "response_201": {
+      "message": "Evento recebido com sucesso.",
+      "evento_id": 11,
+      "equipamento": {
+        "id": 1,
+        "nome": "Bomba de Infusão 402",
+        "codigo": "BOMBA-INFUSAO-402"
+      }
+    }
+  },
+  "receber_evento_conectividade_restabelecida": {
+    "request": {
+      "method": "POST",
+      "url": "/api/iot/eventos",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": {
+        "device_id": "BTN-ESP32-402",
+        "evento": "conectividade",
+        "conectividade": "online_restabelecida",
+        "duracao_offline_ms": 12000,
+        "ip": "192.168.0.50",
+        "rssi": -56,
+        "uptime_ms": 145000
+      }
+    },
+    "response_201": {
+      "message": "Evento recebido com sucesso.",
+      "evento_id": 12,
+      "equipamento": {
+        "id": 1,
+        "nome": "Bomba de Infusão 402",
+        "codigo": "BOMBA-INFUSAO-402"
+      }
+    }
+  },
+  "dashboard_resumo": {
+    "request": {
+      "method": "GET",
+      "url": "/api/dashboard/resumo"
+    },
+    "response_200": {
+      "total": 3,
+      "online": 2,
+      "offline": 1,
+      "funcional": 1,
+      "manutencao_curto_prazo": 1,
+      "indisponivel_prioridade": 1,
+      "equipamentos": [
+        {
+          "id": 1,
+          "nome": "Bomba de Infusão 402",
+          "codigo": "BOMBA-INFUSAO-402",
+          "patrimonio": "PAT-000402",
+          "setor": "UTI Adulto",
+          "descricao": "Bomba de infusão vinculada ao botão ESP32 da UTI Adulto",
+          "status_atual": "funcional",
+          "codigo_estado_atual": 0,
+          "conectividade": "online",
+          "ultimo_evento_em": "2026-03-05 12:00:00",
+          "ultimo_heartbeat_em": "2026-03-05 12:00:00",
+          "device_id": "BTN-ESP32-402",
+          "conectividade_calculada": "online"
+        },
+        {
+          "id": 2,
+          "nome": "Monitor Multiparamétrico 101",
+          "codigo": "MONITOR-101",
+          "patrimonio": "PAT-000101",
+          "setor": "Sala Vermelha",
+          "descricao": "Monitor multiparamétrico para testes do dashboard",
+          "status_atual": "manutencao_curto_prazo",
+          "codigo_estado_atual": 1,
+          "conectividade": "online",
+          "ultimo_evento_em": "2026-03-05 11:59:00",
+          "ultimo_heartbeat_em": "2026-03-05 11:59:00",
+          "device_id": "BTN-ESP32-101",
+          "conectividade_calculada": "online"
+        },
+        {
+          "id": 3,
+          "nome": "Ventilador Pulmonar 205",
+          "codigo": "VENTILADOR-205",
+          "patrimonio": "PAT-000205",
+          "setor": "UTI Neonatal",
+          "descricao": "Ventilador pulmonar cadastrado para simulação de indisponibilidade",
+          "status_atual": "indisponivel_prioridade",
+          "codigo_estado_atual": 2,
+          "conectividade": "offline",
+          "ultimo_evento_em": "2026-03-05 11:30:00",
+          "ultimo_heartbeat_em": "2026-03-05 11:30:00",
+          "device_id": "BTN-ESP32-205",
+          "conectividade_calculada": "offline"
+        }
+      ]
+    }
+  },
+  "erros_comuns": {
+    "device_id_nao_informado": {
+      "request": {
+        "method": "POST",
+        "url": "/api/iot/eventos",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "evento": "status_equipamento",
+          "codigo_estado": 0,
+          "status": "funcional",
+          "conectividade": "online"
+        }
+      },
+      "response_400": {
+        "error": "device_id não informado no payload"
+      }
+    },
+    "device_id_nao_vinculado": {
+      "request": {
+        "method": "POST",
+        "url": "/api/iot/eventos",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "device_id": "BTN-ESP32-999",
+          "evento": "status_equipamento",
+          "codigo_estado": 1,
+          "status": "manutencao_curto_prazo",
+          "conectividade": "online"
+        }
+      },
+      "response_404": {
+        "error": "Nenhum equipamento vinculado a este device_id",
+        "device_id": "BTN-ESP32-999"
+      }
+    },
+    "json_invalido_ou_vazio": {
+      "request": {
+        "method": "POST",
+        "url": "/api/equipamentos",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {}
+      },
+      "response_400": {
+        "error": "Corpo da requisição vazio ou JSON inválido."
+      }
+    },
+    "content_type_invalido": {
+      "request": {
+        "method": "POST",
+        "url": "/api/equipamentos",
+        "headers": {
+          "Content-Type": "text/plain"
+        },
+        "body": "nome=Bomba"
+      },
+      "response_415": {
+        "error": "Content-Type inválido. Use application/json."
+      }
+    }
+  }
+}
