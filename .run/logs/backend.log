@@ -1,0 +1,36 @@
+
+> carenode-backend@1.0.0 start
+> node server.js
+
+(node:53449) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+SQLite conectado em: /Users/particular/Desktop/projeto_CareNode_mac_revisado_v3/dashboard/backend/src/database/database.sqlite
+Schema do banco inicializado com sucesso.
+Backend CareNode disponível em http://localhost:3001
+
+> carenode-backend@1.0.0 start
+> node server.js
+
+(node:53661) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+SQLite conectado em: /Users/particular/Desktop/projeto_CareNode_mac_revisado_v3/dashboard/backend/src/database/database.sqlite
+Schema do banco inicializado com sucesso.
+Backend CareNode disponível em http://localhost:3001
+
+> carenode-backend@1.0.0 start
+> node server.js
+
+(node:53817) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+SQLite conectado em: /Users/particular/Desktop/projeto_CareNode_mac_revisado_v3/dashboard/backend/src/database/database.sqlite
+Schema do banco inicializado com sucesso.
+Backend CareNode disponível em http://localhost:3001
+
+> carenode-backend@1.0.0 start
+> node server.js
+
+(node:53995) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+SQLite conectado em: /Users/particular/Desktop/projeto_CareNode_mac_revisado_v3/dashboard/backend/src/database/database.sqlite
+Schema do banco inicializado com sucesso.
+Backend CareNode disponível em http://localhost:3001

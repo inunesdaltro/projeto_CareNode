@@ -9,6 +9,9 @@ export function listarEquipamentosRepository() {
         e.id,
         e.nome,
         e.codigo,
+        e.tipo,
+        e.marca,
+        e.modelo,
         e.patrimonio,
         e.setor,
         e.descricao,
@@ -42,6 +45,9 @@ export function buscarEquipamentoPorId(id) {
         id,
         nome,
         codigo,
+        tipo,
+        marca,
+        modelo,
         patrimonio,
         setor,
         descricao,
@@ -73,6 +79,9 @@ export function buscarEquipamentoPorCodigo(codigo) {
         id,
         nome,
         codigo,
+        tipo,
+        marca,
+        modelo,
         patrimonio,
         setor,
         descricao,
@@ -97,22 +106,34 @@ export function buscarEquipamentoPorCodigo(codigo) {
   });
 }
 
-export function criarEquipamento({ nome, codigo, patrimonio = null, setor = null, descricao = null }) {
+export function criarEquipamento({
+  nome,
+  codigo,
+  tipo = null,
+  marca = null,
+  modelo = null,
+  patrimonio = null,
+  setor = null,
+  descricao = null
+}) {
   return new Promise((resolve, reject) => {
     const sql = `
       INSERT INTO equipamentos (
         nome,
         codigo,
+        tipo,
+        marca,
+        modelo,
         patrimonio,
         setor,
         descricao
       )
-      VALUES (?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     db.run(
       sql,
-      [nome, codigo, patrimonio, setor, descricao],
+      [nome, codigo, tipo, marca, modelo, patrimonio, setor, descricao],
       function (err) {
         if (err) {
           reject(err);
@@ -121,6 +142,9 @@ export function criarEquipamento({ nome, codigo, patrimonio = null, setor = null
             id: this.lastID,
             nome,
             codigo,
+            tipo,
+            marca,
+            modelo,
             patrimonio,
             setor,
             descricao
@@ -133,7 +157,19 @@ export function criarEquipamento({ nome, codigo, patrimonio = null, setor = null
 
 export function atualizarEquipamento(
   id,
-  { nome, codigo, patrimonio, setor, descricao, status_atual, codigo_estado_atual, conectividade }
+  {
+    nome,
+    codigo,
+    tipo,
+    marca,
+    modelo,
+    patrimonio,
+    setor,
+    descricao,
+    status_atual,
+    codigo_estado_atual,
+    conectividade
+  }
 ) {
   return new Promise((resolve, reject) => {
     const sql = `
@@ -141,6 +177,9 @@ export function atualizarEquipamento(
       SET
         nome = COALESCE(?, nome),
         codigo = COALESCE(?, codigo),
+        tipo = COALESCE(?, tipo),
+        marca = COALESCE(?, marca),
+        modelo = COALESCE(?, modelo),
         patrimonio = COALESCE(?, patrimonio),
         setor = COALESCE(?, setor),
         descricao = COALESCE(?, descricao),
@@ -160,6 +199,9 @@ export function atualizarEquipamento(
       [
         nome ?? null,
         codigo ?? null,
+        tipo ?? null,
+        marca ?? null,
+        modelo ?? null,
         patrimonio ?? null,
         setor ?? null,
         descricao ?? null,

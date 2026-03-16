@@ -1,5 +1,3 @@
-// dashboard/frontend/src/pages/DashboardPage.jsx
-
 import Header from "../components/layout/Header.jsx";
 import PageContainer from "../components/layout/PageContainer.jsx";
 import MetricCard from "../components/dashboard/MetricCard.jsx";
@@ -50,7 +48,7 @@ export default function DashboardPage({ apiUrl, pollIntervalMs }) {
     <PageContainer>
       <Header
         title="Dashboard"
-        subtitle="Acompanhe status operacional, conectividade e panorama do parque tecnológico."
+        subtitle="Acompanhe status operacional, conectividade e panorama do parque tecnológico. Cadastre o equipamento uma vez e deixe o ESP32 enviar apenas código e status."
         rightContent={
           <button className="button button-primary" onClick={refresh}>
             Atualizar agora
@@ -83,7 +81,7 @@ export default function DashboardPage({ apiUrl, pollIntervalMs }) {
         {!equipamentos.length ? (
           <EmptyState
             title="Sem equipamentos cadastrados"
-            description="Cadastre um equipamento e vincule um dispositivo para começar o monitoramento."
+            description="Abra a página Cadastro, registre o equipamento e depois configure o mesmo código no firmware do ESP32."
           />
         ) : null}
       </div>

@@ -10,6 +10,9 @@ function buscarEquipamentos() {
         e.id,
         e.nome,
         e.codigo,
+        e.tipo,
+        e.marca,
+        e.modelo,
         e.patrimonio,
         e.setor,
         e.descricao,
@@ -46,7 +49,10 @@ function buscarEventosRecentes(limit = 10) {
         ev.uptime_ms,
         ev.recebido_em,
         e.nome AS equipamento_nome,
-        e.codigo AS equipamento_codigo
+        e.codigo AS equipamento_codigo,
+        e.tipo AS equipamento_tipo,
+        e.marca AS equipamento_marca,
+        e.modelo AS equipamento_modelo
       FROM eventos ev
       LEFT JOIN equipamentos e
         ON e.id = ev.equipamento_id

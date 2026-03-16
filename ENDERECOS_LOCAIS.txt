@@ -1,0 +1,17 @@
+CARENODE - ENDEREÇOS LOCAIS
+
+Frontend (dashboard no navegador)
+http://localhost:5173
+
+Backend (API)
+http://localhost:3001
+
+Health check
+http://localhost:3001/api/health
+
+URL para a ESP32 (.ino)
+http://172.17.24.94:3001/api/iot/eventos
+
+Observação importante:
+No navegador do Mac você usa localhost.
+Na ESP32 você usa o IP do Mac, nunca localhost.

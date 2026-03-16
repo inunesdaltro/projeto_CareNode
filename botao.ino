@@ -1,4 +1,5 @@
 #include <WiFi.h>
+#include <WiFiClient.h>
 #include <WiFiClientSecure.h>
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
@@ -9,9 +10,11 @@
 // =====================================================
 const char* ssid     = "Wokwi-GUEST";
 const char* password = "";
-const char* api_url  = "http://SEU_BACKEND:3001/api/iot/eventos";
+const char* api_url  = "http://IP_DO_MAC:3001/api/iot/eventos";
 
-const String id_equipamento = "BTN-ESP32-402";
+// Use exatamente o mesmo CÓDIGO cadastrado do equipamento no dashboard.
+// Em ESP32 real, use o IP do seu Mac na rede local; localhost não funciona no microcontrolador.
+const String codigoEquipamento = "BOMBA-INFUSAO-402";
 
 // =====================================================
 // 2. MAPEAMENTO DE PINOS
@@ -26,10 +29,10 @@ const int ledAzul     = 13;
 // 3. TEMPOS E INTERVALOS
 // =====================================================
 const unsigned long tempoDebounce        = 50;
-const unsigned long tempoConfirmacao     = 2000;   // 2 s
-const unsigned long tempoTimeoutSelecao  = 5000;   // 5 s para voltar ao estado anterior
-const unsigned long intervaloHeartbeat   = 30000;  // 30 s
-const unsigned long intervaloReconnect   = 5000;   // 5 s
+const unsigned long tempoConfirmacao     = 2000;
+const unsigned long tempoTimeoutSelecao  = 5000;
+const unsigned long intervaloHeartbeat   = 30000;
+const unsigned long intervaloReconnect   = 5000;
 
 const unsigned long periodoPiscaAzul     = 500;
 const unsigned long periodoPiscaVermelho = 250;
@@ -37,11 +40,11 @@ const unsigned long periodoPiscaVermelho = 250;
 // =====================================================
 // 4. ESTADOS
 // =====================================================
-// 0 = Verde
-// 1 = Amarelo
-// 2 = Vermelho
+// 0 = funcional
+// 1 = manutencao_curto_prazo
+// 2 = indisponivel_prioridade
 int estadoSelecionado = 0;
-int estadoAtual = 0; // último estado confirmado
+int estadoAtual = 0;
 
 bool selecaoTemporariaAtiva = false;
 unsigned long instanteSelecao = 0;
@@ -76,6 +79,8 @@ bool estadoPiscaVermelho = false;
 // 7. PERSISTÊNCIA
 // =====================================================
 Preferences prefs;
+WiFiClient clientHttp;
+WiFiClientSecure clientHttps;
 
 // =====================================================
 // 8. DECLARAÇÕES
@@ -93,17 +98,13 @@ void enviarPendencias();
 void registrarPerdaConexao();
 void prepararEventoReconexao();
 void enviarHeartbeat(bool forcar = false);
-String montarPayloadStatus(int estado);
-String montarPayloadHeartbeat();
-String montarPayloadReconexao(unsigned long duracaoOfflineMs);
+String montarPayloadMinimo(int estado);
 void piscarTodosLEDsConfirmacao();
 void piscarErroServidor();
 void apagarLEDsEstado();
 void mostrarEstadoSelecionado();
+bool urlEhHttps();
 
-// =====================================================
-// 9. SETUP
-// =====================================================
 void setup() {
   Serial.begin(115200);
   delay(200);
@@ -127,9 +128,6 @@ void setup() {
   Serial.println(textoEstado(estadoAtual));
 }
 
-// =====================================================
-// 10. LOOP
-// =====================================================
 void loop() {
   gerenciarWiFi();
   verificarTimeoutSelecao();
@@ -142,18 +140,12 @@ void loop() {
   }
 }
 
-// =====================================================
-// 11. TEXTO DO ESTADO
-// =====================================================
 String textoEstado(int estado) {
   if (estado == 0) return "funcional";
   if (estado == 1) return "manutencao_curto_prazo";
   return "indisponivel_prioridade";
 }
 
-// =====================================================
-// 12. WIFI
-// =====================================================
 void iniciarWiFi() {
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
@@ -192,9 +184,6 @@ void gerenciarWiFi() {
   wifiConectadoAnterior = wifiConectado;
 }
 
-// =====================================================
-// 13. LEDS
-// =====================================================
 void apagarLEDsEstado() {
   digitalWrite(ledVerde, LOW);
   digitalWrite(ledAmarelo, LOW);
@@ -231,9 +220,6 @@ void atualizarLEDs() {
   }
 }
 
-// =====================================================
-// 14. BOTÃO
-// =====================================================
 void lerBotao() {
   int leituraAtual = digitalRead(pinoBotao);
 
@@ -290,9 +276,6 @@ void verificarTimeoutSelecao() {
   }
 }
 
-// =====================================================
-// 15. CONFIRMAÇÃO
-// =====================================================
 void confirmarEstado() {
   estadoAtual = estadoSelecionado;
   selecaoTemporariaAtiva = false;
@@ -304,7 +287,7 @@ void confirmarEstado() {
 
   piscarTodosLEDsConfirmacao();
 
-  String payload = montarPayloadStatus(estadoAtual);
+  String payload = montarPayloadMinimo(estadoAtual);
 
   if (wifiConectado) {
     if (enviarJSON(payload)) {
@@ -320,73 +303,34 @@ void confirmarEstado() {
   }
 }
 
-// =====================================================
-// 16. JSON
-// =====================================================
-String montarPayloadStatus(int estado) {
-  StaticJsonDocument<256> doc;
-
-  doc["id_equipamento"] = id_equipamento;
-  doc["evento"] = "status_equipamento";
-  doc["codigo_estado"] = estado;
-  doc["status"] = textoEstado(estado);
-  doc["conectividade"] = wifiConectado ? "online" : "offline";
-  doc["ip"] = wifiConectado ? WiFi.localIP().toString() : "";
-  doc["rssi"] = wifiConectado ? WiFi.RSSI() : 0;
-  doc["uptime_ms"] = millis();
+String montarPayloadMinimo(int estado) {
+  StaticJsonDocument<64> doc;
+  doc["c"] = codigoEquipamento;
+  doc["s"] = estado;
 
   String payload;
   serializeJson(doc, payload);
   return payload;
 }
 
-String montarPayloadHeartbeat() {
-  StaticJsonDocument<256> doc;
-
-  doc["id_equipamento"] = id_equipamento;
-  doc["evento"] = "heartbeat";
-  doc["conectividade"] = "online";
-  doc["status_atual"] = textoEstado(estadoAtual);
-  doc["codigo_estado_atual"] = estadoAtual;
-  doc["ip"] = WiFi.localIP().toString();
-  doc["rssi"] = WiFi.RSSI();
-  doc["uptime_ms"] = millis();
-
-  String payload;
-  serializeJson(doc, payload);
-  return payload;
+bool urlEhHttps() {
+  return String(api_url).startsWith("https://");
 }
 
-String montarPayloadReconexao(unsigned long duracaoOfflineMs) {
-  StaticJsonDocument<256> doc;
-
-  doc["id_equipamento"] = id_equipamento;
-  doc["evento"] = "conectividade";
-  doc["conectividade"] = "online_restabelecida";
-  doc["duracao_offline_ms"] = duracaoOfflineMs;
-  doc["status_atual"] = textoEstado(estadoAtual);
-  doc["codigo_estado_atual"] = estadoAtual;
-  doc["ip"] = WiFi.localIP().toString();
-  doc["rssi"] = WiFi.RSSI();
-  doc["uptime_ms"] = millis();
-
-  String payload;
-  serializeJson(doc, payload);
-  return payload;
-}
-
-// =====================================================
-// 17. HTTP
-// =====================================================
 bool enviarJSON(const String& payload) {
   if (WiFi.status() != WL_CONNECTED) return false;
 
-  WiFiClientSecure client;
-  client.setInsecure();
-
   HTTPClient http;
+  bool iniciado = false;
 
-  if (!http.begin(client, api_url)) {
+  if (urlEhHttps()) {
+    clientHttps.setInsecure();
+    iniciado = http.begin(clientHttps, api_url);
+  } else {
+    iniciado = http.begin(clientHttp, api_url);
+  }
+
+  if (!iniciado) {
     Serial.println("Falha ao iniciar HTTP.");
     return false;
   }
@@ -406,27 +350,12 @@ bool enviarJSON(const String& payload) {
   return (httpResponseCode > 0 && httpResponseCode < 400);
 }
 
-// =====================================================
-// 18. PENDÊNCIAS
-// =====================================================
 void salvarPendencia(const char* chave, const String& payload) {
   prefs.putString(chave, payload);
 }
 
 void enviarPendencias() {
   if (!wifiConectado) return;
-
-  String pendConexao = prefs.getString("pend_conexao", "");
-  if (pendConexao.length() > 0) {
-    Serial.println("Enviando pendência de conectividade...");
-    if (enviarJSON(pendConexao)) {
-      prefs.remove("pend_conexao");
-      Serial.println("Pendência de conectividade enviada.");
-    } else {
-      Serial.println("Falha ao enviar pendência de conectividade.");
-      return;
-    }
-  }
 
   String pendStatus = prefs.getString("pend_status", "");
   if (pendStatus.length() > 0) {
@@ -440,32 +369,14 @@ void enviarPendencias() {
   }
 }
 
-// =====================================================
-// 19. CONECTIVIDADE
-// =====================================================
 void registrarPerdaConexao() {
-  prefs.putBool("offline_pendente", true);
-  prefs.putULong("offline_inicio", millis());
+  // O backend calcula offline pelo timeout entre heartbeats.
 }
 
 void prepararEventoReconexao() {
-  bool offlinePendente = prefs.getBool("offline_pendente", false);
-
-  if (offlinePendente) {
-    unsigned long inicioOffline = prefs.getULong("offline_inicio", millis());
-    unsigned long duracaoOffline = millis() - inicioOffline;
-
-    String payload = montarPayloadReconexao(duracaoOffline);
-    salvarPendencia("pend_conexao", payload);
-
-    prefs.putBool("offline_pendente", false);
-    prefs.remove("offline_inicio");
-  }
+  // Na estratégia mínima, basta forçar um envio ao reconectar.
 }
 
-// =====================================================
-// 20. HEARTBEAT
-// =====================================================
 void enviarHeartbeat(bool forcar) {
   if (!wifiConectado) return;
 
@@ -474,16 +385,13 @@ void enviarHeartbeat(bool forcar) {
   if (forcar || (agora - ultimoHeartbeat >= intervaloHeartbeat)) {
     ultimoHeartbeat = agora;
 
-    String payload = montarPayloadHeartbeat();
+    String payload = montarPayloadMinimo(estadoAtual);
 
-    Serial.println("Enviando heartbeat...");
+    Serial.println("Enviando heartbeat mínimo...");
     enviarJSON(payload);
   }
 }
 
-// =====================================================
-// 21. FEEDBACK VISUAL
-// =====================================================
 void piscarTodosLEDsConfirmacao() {
   for (int i = 0; i < 3; i++) {
     digitalWrite(ledVerde, HIGH);

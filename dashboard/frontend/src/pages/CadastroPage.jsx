@@ -1,5 +1,3 @@
-// dashboard/frontend/src/pages/CadastroPage.jsx
-
 import Header from "../components/layout/Header.jsx";
 import PageContainer from "../components/layout/PageContainer.jsx";
 import EquipamentoForm from "../components/equipamentos/EquipamentoForm.jsx";
@@ -30,7 +28,7 @@ export default function CadastroPage({ apiUrl }) {
     <PageContainer>
       <Header
         title="Cadastro"
-        subtitle="Cadastre equipamentos e vincule cada botão/dispositivo IoT ao equipamento correspondente."
+        subtitle="Cadastre primeiro o equipamento no dashboard. O vínculo por device_id é opcional e só é necessário se você quiser rastrear a placa física separadamente do código do equipamento."
       />
 
       {error ? <div className="alert alert-error">{error}</div> : null}

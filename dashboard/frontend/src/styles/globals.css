@@ -1,7 +1,21 @@
-/* dashboard/frontend/src/styles/globals.css */
-
 * {
   box-sizing: border-box;
+}
+
+:root {
+  --bg: #f2f7f5;
+  --surface: #ffffff;
+  --surface-soft: #f7fbfa;
+  --border: #d8e7e1;
+  --text: #16322c;
+  --muted: #5a746d;
+  --primary: #0c7a65;
+  --primary-strong: #095b4c;
+  --primary-soft: #e4f4ef;
+  --success: #11845f;
+  --warning: #c4821f;
+  --danger: #c54545;
+  --shadow: 0 10px 30px rgba(9, 91, 76, 0.08);
 }
 
 html, body {
@@ -10,9 +24,9 @@ html, body {
 
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  color: #0f172a;
-  background: #f3f6fb;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: var(--text);
+  background: linear-gradient(180deg, #f6fbf9 0%, var(--bg) 100%);
 }
 
 button, input, textarea, select {

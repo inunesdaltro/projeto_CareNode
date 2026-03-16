@@ -1,5 +1,3 @@
-// dashboard/frontend/src/components/equipamentos/VinculoDispositivoForm.jsx
-
 import { useEffect, useMemo, useState } from "react";
 
 export default function VinculoDispositivoForm({
@@ -19,7 +17,6 @@ export default function VinculoDispositivoForm({
   }, [equipamentos]);
 
   useEffect(() => {
-    // pré-seleciona o primeiro se houver
     if (!equipamentoId && options.length) {
       setEquipamentoId(options[0].id);
     }
@@ -44,9 +41,9 @@ export default function VinculoDispositivoForm({
   return (
     <form className="form-card" onSubmit={handleSubmit}>
       <div className="form-header">
-        <h3 className="section-title">Vincular dispositivo (botão) ao equipamento</h3>
+        <h3 className="section-title">Vincular placa ESP32 ao equipamento</h3>
         <p className="form-description">
-          Informe o <code>device_id</code> do ESP32 e selecione o equipamento correspondente.
+          Etapa opcional. Use apenas se quiser rastrear a placa por <code>device_id</code>. No fluxo mínimo, basta configurar o código do equipamento no firmware.
         </p>
       </div>
 
@@ -78,19 +75,19 @@ export default function VinculoDispositivoForm({
             type="text"
             value={deviceId}
             onChange={(e) => setDeviceId(e.target.value)}
-            placeholder="Ex.: BTN-ESP32-402"
+            placeholder="Ex.: ESP32-UTI-402"
             required
           />
         </div>
 
         <div className="form-field form-field-full">
-          <label htmlFor="descricao_dispositivo">Descrição (opcional)</label>
+          <label htmlFor="descricao_dispositivo">Descrição da placa (opcional)</label>
           <input
             id="descricao_dispositivo"
             type="text"
             value={descricao}
             onChange={(e) => setDescricao(e.target.value)}
-            placeholder="Ex.: Botão instalado na UTI Adulto, ao lado do equipamento"
+            placeholder="Ex.: ESP32 fixado na lateral direita do equipamento"
           />
         </div>
       </div>

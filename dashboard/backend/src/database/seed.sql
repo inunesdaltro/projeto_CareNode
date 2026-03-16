@@ -4,6 +4,9 @@
 INSERT INTO equipamentos (
     nome,
     codigo,
+    tipo,
+    marca,
+    modelo,
     patrimonio,
     setor,
     descricao,
@@ -14,6 +17,9 @@ INSERT INTO equipamentos (
 (
     'Bomba de Infusão 402',
     'BOMBA-INFUSAO-402',
+    'Bomba de Infusão',
+    'Mindray',
+    'BeneFusion VP5',
     'PAT-000402',
     'UTI Adulto',
     'Bomba de infusão vinculada ao botão ESP32 da UTI Adulto',
@@ -24,6 +30,9 @@ INSERT INTO equipamentos (
 (
     'Monitor Multiparamétrico 101',
     'MONITOR-101',
+    'Monitor Multiparamétrico',
+    'Philips',
+    'IntelliVue MX550',
     'PAT-000101',
     'Sala Vermelha',
     'Monitor multiparamétrico para testes do dashboard',
@@ -34,6 +43,9 @@ INSERT INTO equipamentos (
 (
     'Ventilador Pulmonar 205',
     'VENTILADOR-205',
+    'Ventilador Pulmonar',
+    'Dräger',
+    'Evita V300',
     'PAT-000205',
     'UTI Neonatal',
     'Ventilador pulmonar cadastrado para simulação de indisponibilidade',
@@ -82,36 +94,36 @@ INSERT INTO eventos (
 (
     1,
     'BTN-ESP32-402',
-    'status_equipamento',
+    'telemetria_minima',
     'funcional',
     0,
     'online',
-    '192.168.0.40',
-    -52,
-    120340,
-    '{"device_id":"BTN-ESP32-402","evento":"status_equipamento","status":"funcional","codigo_estado":0,"conectividade":"online","ip":"192.168.0.40","rssi":-52,"uptime_ms":120340}'
+    NULL,
+    NULL,
+    NULL,
+    '{"c":"BOMBA-INFUSAO-402","s":0}'
 ),
 (
     2,
     'BTN-ESP32-101',
-    'status_equipamento',
+    'telemetria_minima',
     'manutencao_curto_prazo',
     1,
     'online',
-    '192.168.0.41',
-    -60,
-    98420,
-    '{"device_id":"BTN-ESP32-101","evento":"status_equipamento","status":"manutencao_curto_prazo","codigo_estado":1,"conectividade":"online","ip":"192.168.0.41","rssi":-60,"uptime_ms":98420}'
+    NULL,
+    NULL,
+    NULL,
+    '{"c":"MONITOR-101","s":1}'
 ),
 (
     3,
     'BTN-ESP32-205',
-    'status_equipamento',
+    'telemetria_minima',
     'indisponivel_prioridade',
     2,
     'offline',
-    '192.168.0.42',
-    -70,
-    45000,
-    '{"device_id":"BTN-ESP32-205","evento":"status_equipamento","status":"indisponivel_prioridade","codigo_estado":2,"conectividade":"offline","ip":"192.168.0.42","rssi":-70,"uptime_ms":45000}'
+    NULL,
+    NULL,
+    NULL,
+    '{"c":"VENTILADOR-205","s":2}'
 );
