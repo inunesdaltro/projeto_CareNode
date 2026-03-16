@@ -1,6 +1,8 @@
-// dashboard/backend/src/controllers/equipamentos.controller.js
-
 import db from "../config/db.js";
+
+function isUniqueConstraint(err) {
+  return String(err?.message || "").toLowerCase().includes("unique");
+}
 
 export function listarEquipamentos(req, res) {
   const sql = `
@@ -8,6 +10,9 @@ export function listarEquipamentos(req, res) {
       e.id,
       e.nome,
       e.codigo,
+      e.tipo,
+      e.marca,
+      e.modelo,
       e.patrimonio,
       e.setor,
       e.descricao,
@@ -36,7 +41,7 @@ export function listarEquipamentos(req, res) {
 }
 
 export function cadastrarEquipamento(req, res) {
-  const { nome, codigo, patrimonio, setor, descricao } = req.body;
+  const { nome, codigo, tipo, marca, modelo, patrimonio, setor, descricao } = req.body;
 
   if (!nome || !codigo) {
     return res.status(400).json({
@@ -48,26 +53,37 @@ export function cadastrarEquipamento(req, res) {
     INSERT INTO equipamentos (
       nome,
       codigo,
+      tipo,
+      marca,
+      modelo,
       patrimonio,
       setor,
       descricao
     )
-    VALUES (?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
   db.run(
     sql,
     [
-      nome,
-      codigo,
-      patrimonio || null,
-      setor || null,
-      descricao || null
+      String(nome).trim(),
+      String(codigo).trim(),
+      tipo ? String(tipo).trim() : null,
+      marca ? String(marca).trim() : null,
+      modelo ? String(modelo).trim() : null,
+      patrimonio ? String(patrimonio).trim() : null,
+      setor ? String(setor).trim() : null,
+      descricao ? String(descricao).trim() : null
     ],
     function (err) {
       if (err) {
-        return res.status(500).json({
-          error: "Erro ao cadastrar equipamento",
+        const status = isUniqueConstraint(err) ? 409 : 500;
+        const error = isUniqueConstraint(err)
+          ? "Já existe um equipamento cadastrado com este código."
+          : "Erro ao cadastrar equipamento";
+
+        return res.status(status).json({
+          error,
           details: err.message
         });
       }
@@ -122,11 +138,16 @@ export function vincularDispositivo(req, res) {
 
     db.run(
       inserirDispositivoSql,
-      [device_id, equipamentoId, descricao || null],
+      [String(device_id).trim(), equipamentoId, descricao ? String(descricao).trim() : null],
       function (insertErr) {
         if (insertErr) {
-          return res.status(500).json({
-            error: "Erro ao vincular dispositivo",
+          const status = isUniqueConstraint(insertErr) ? 409 : 500;
+          const error = isUniqueConstraint(insertErr)
+            ? "Este device_id já está vinculado a outro equipamento."
+            : "Erro ao vincular dispositivo";
+
+          return res.status(status).json({
+            error,
             details: insertErr.message
           });
         }
@@ -139,7 +160,7 @@ export function vincularDispositivo(req, res) {
             nome: equipamento.nome,
             codigo: equipamento.codigo
           },
-          device_id
+          device_id: String(device_id).trim()
         });
       }
     );

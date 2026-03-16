@@ -5,6 +5,9 @@ import { useState } from "react";
 const initialFormState = {
   nome: "",
   codigo: "",
+  tipo: "",
+  marca: "",
+  modelo: "",
   patrimonio: "",
   setor: "",
   descricao: ""
@@ -39,6 +42,9 @@ export default function EquipamentoForm({
     await onSubmit?.({
       nome: form.nome.trim(),
       codigo: form.codigo.trim(),
+      tipo: form.tipo.trim(),
+      marca: form.marca.trim(),
+      modelo: form.modelo.trim(),
       patrimonio: form.patrimonio.trim(),
       setor: form.setor.trim(),
       descricao: form.descricao.trim()
@@ -52,7 +58,7 @@ export default function EquipamentoForm({
       <div className="form-header">
         <h3 className="section-title">Cadastro de equipamento</h3>
         <p className="form-description">
-          Informe os dados básicos do equipamento para incluí-lo no dashboard.
+          Informe os dados cadastrais do equipamento. O ESP32 enviará apenas o código e o status.
         </p>
       </div>
 
@@ -80,6 +86,42 @@ export default function EquipamentoForm({
             onChange={handleChange}
             placeholder="Ex.: BOMBA-INFUSAO-402"
             required
+          />
+        </div>
+
+        <div className="form-field">
+          <label htmlFor="tipo">Tipo</label>
+          <input
+            id="tipo"
+            name="tipo"
+            type="text"
+            value={form.tipo}
+            onChange={handleChange}
+            placeholder="Ex.: Bomba de Infusão"
+          />
+        </div>
+
+        <div className="form-field">
+          <label htmlFor="marca">Marca</label>
+          <input
+            id="marca"
+            name="marca"
+            type="text"
+            value={form.marca}
+            onChange={handleChange}
+            placeholder="Ex.: Mindray"
+          />
+        </div>
+
+        <div className="form-field">
+          <label htmlFor="modelo">Modelo</label>
+          <input
+            id="modelo"
+            name="modelo"
+            type="text"
+            value={form.modelo}
+            onChange={handleChange}
+            placeholder="Ex.: BeneFusion VP5"
           />
         </div>
 

@@ -1,188 +1,77 @@
-# Dashboard — Monitoramento de Equipamentos de Engenharia Clínica
+# CareNode
 
-## Descrição do projeto
-Este projeto tem como objetivo criar um dashboard web para monitoramento contínuo de equipamentos médico-hospitalares a partir de dispositivos IoT baseados em ESP32.
+Sistema de monitoramento IoT para Engenharia Clínica, com cadastro de equipamentos no dashboard e recebimento de pacotes mínimos enviados por ESP32.
 
-Cada dispositivo físico, composto por um botão e LEDs de sinalização, será vinculado a um equipamento específico do parque tecnológico hospitalar. Ao interagir com o botão, o dispositivo enviará eventos em formato JSON para o backend do sistema, permitindo o acompanhamento remoto do estado operacional dos equipamentos.
+## Como o fluxo funciona
 
-O sistema foi pensado para apoiar a Engenharia Clínica no controle do parque tecnológico, facilitando a visualização de equipamentos funcionais, em necessidade de manutenção ou indisponíveis, além do monitoramento da conectividade dos dispositivos instalados.
+1. No dashboard, você cadastra o equipamento com nome, código, tipo, marca, modelo, patrimônio e setor.
+2. No firmware da ESP32, você configura apenas o mesmo `codigo` cadastrado no sistema.
+3. Cada ESP32 envia para o backend um JSON mínimo como:
 
----
+```json
+{"c":"BOMBA-INFUSAO-402","s":0}
+```
 
-## Objetivos
-O dashboard deverá permitir:
+4. O backend localiza o equipamento pelo código, salva o evento e atualiza o status.
+5. O frontend exibe nome, marca, modelo, setor e demais dados a partir do cadastro do equipamento.
+
+## Status usados no firmware
+
+- `0` = funcional
+- `1` = manutencao_curto_prazo
+- `2` = indisponivel_prioridade
+
+## Cadastro no dashboard
+
+Sim. A página **Cadastro** já permite:
 
 - cadastrar equipamentos
-- armazenar nome, código, patrimônio, setor e descrição
-- vincular cada dispositivo IoT a um equipamento específico
-- receber eventos JSON enviados pelos dispositivos
-- atualizar continuamente o status dos equipamentos
-- monitorar conectividade online/offline por heartbeat
-- manter histórico de eventos para rastreabilidade
+- vincular opcionalmente uma placa ESP32 por `device_id`
 
----
+O vínculo por `device_id` não é obrigatório para o fluxo mínimo. Ele serve apenas se você quiser identificar também a placa física instalada.
 
-## Estrutura inicial do projeto
-A estrutura principal do projeto será organizada da seguinte forma:
+## Estrutura
 
 ```text
-CareNode/
-├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── dashboard/
-│   │   │   ├── equipamentos/
-│   │   │   └── layout/
-│   │   ├── hooks/
-│   │   ├── pages/
-│   │   ├── styles/
-│   │   └── utils/
-│   └── ...
-├── backend/
-│   └── ...
-└── README.md
-
----
+projeto_CareNode/
+├── botao.ino
+└── dashboard/
+    ├── backend/
+    ├── frontend/
+    └── docs/
 ```
 
-## Como executar
-
-### Backend
+## Executando o backend
 
 ```bash
-cd backend
+cd dashboard/backend
 npm install
+cp .env.example .env
 npm start
 ```
 
-### Frontend
+Servidor padrão: `http://localhost:3001`
+
+## Executando o frontend
 
 ```bash
-cd frontend
+cd dashboard/frontend
 npm install
 npm run dev
 ```
 
-### Testes do backend
+Frontend padrão: `http://localhost:5173`
+
+Se quiser apontar o frontend para outro backend, ajuste o arquivo `.env` do frontend:
+
+```env
+VITE_API_URL=http://localhost:3001/api
+VITE_POLL_INTERVAL_MS=5000
+```
+
+## Testes do backend
 
 ```bash
-cd backend
-npm install
+cd dashboard/backend
 npm test
 ```
-## Tecnologias utilizadas
-
-Este projeto pode incluir tecnologias como:
-
-- **React**
-- **JavaScript**
-- **CSS**
-- **Node.js**
-- **API REST**
-
-
-## Principais módulos
-
-### Dashboard
-
-Apresenta uma visão consolidada das informações mais importantes do sistema, facilitando o acompanhamento do estado geral dos equipamentos.
-
-### Equipamentos
-
-Responsável pelo cadastro, edição, listagem e filtragem dos equipamentos monitorados.
-
-### Eventos
-
-Permite registrar, consultar e acompanhar ocorrências relacionadas aos dispositivos e ativos do sistema.
-
-### Vínculo de dispositivos
-
-Gerencia a associação entre equipamentos físicos e seus respectivos dispositivos conectados.
-
-## Objetivo
-
-O **CareNode** tem como objetivo fornecer uma solução prática e organizada para o gerenciamento de equipamentos e dispositivos, promovendo:
-
-- maior visibilidade operacional;
-- melhor rastreabilidade de eventos;
-- apoio à tomada de decisão;
-- otimização do acompanhamento técnico dos ativos.
-
-## Fluxo geral do sistema
-
-```mermaid
-flowchart LR
-    A[Dispositivos e Equipamentos] --> B[Coleta de dados]
-    B --> C[Backend / API]
-    C --> D[Dashboard]
-    C --> E[Eventos]
-    C --> F[Cadastro de Equipamentos]
-    C --> G[Vínculo de Dispositivos]
-```
-## Como executar o projeto
-
-### Pré-requisitos
-
-Antes de começar, você vai precisar ter instalado em sua máquina:
-
-- **Node.js**
-- **npm ou yarn**
-
-### Instalação
-
-Clone o repositório:
-
-```bash
-git clone https://github.com/seu-usuario/carenode.git
-```
-```bash
-cd carenode
-```
-```bash
-cd frontend
-npm install
-```
-```bash
-cd ../backend
-npm install
-```
-## Execução
-
-### Frontend
-
-```bash
-cd frontend
-npm run dev
-```
-Ou, dependendo da configuração:
-```bash
-npm start
-```
-###Backend
-```bash
-cd backend
-npm run dev
-```
-Ou:
-```bash
-npm start
-```
-## Interface esperada
-
-O sistema foi pensado para oferecer uma navegação simples e clara, com páginas dedicadas para:
-
-- dashboard principal;
-- gerenciamento de equipamentos;
-- visualização de eventos;
-- formulários de cadastro e vínculo;
-- componentes de layout para organização da interface.
-
-## Aplicações possíveis
-
-O **CareNode** pode ser aplicado em diferentes contextos, como:
-
-- engenharia clínica hospitalar;
-- monitoramento de dispositivos conectados;
-- gestão de ativos tecnológicos;
-- acompanhamento de infraestrutura técnica.
-

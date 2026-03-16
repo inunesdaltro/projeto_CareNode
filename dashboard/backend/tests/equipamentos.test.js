@@ -1,9 +1,3 @@
-// dashboard/backend/tests/equipamentos.test.js
-//
-// Testes simples usando node:test + fetch (Node 18+).
-// Para rodar futuramente:
-// node --test tests/equipamentos.test.js
-
 import test from "node:test";
 import assert from "node:assert/strict";
 import http from "node:http";
@@ -64,10 +58,13 @@ test.after(async () => {
   if (fs.existsSync(testDbPath)) fs.unlinkSync(testDbPath);
 });
 
-test("POST /api/equipamentos deve cadastrar equipamento", async () => {
+test("POST /api/equipamentos deve cadastrar equipamento completo", async () => {
   const payload = {
     nome: "Bomba de Infusão 402",
     codigo: "BOMBA-INFUSAO-402",
+    tipo: "Bomba de Infusão",
+    marca: "Mindray",
+    modelo: "BeneFusion VP5",
     patrimonio: "PAT-000402",
     setor: "UTI Adulto",
     descricao: "Equipamento de teste"
@@ -86,7 +83,7 @@ test("POST /api/equipamentos deve cadastrar equipamento", async () => {
   assert.ok(Number.isInteger(data.id));
 });
 
-test("GET /api/equipamentos deve listar equipamentos", async () => {
+test("GET /api/equipamentos deve listar dados cadastrais", async () => {
   const resp = await fetch(`${baseUrl}/api/equipamentos`);
   const data = await resp.json();
 
@@ -94,23 +91,23 @@ test("GET /api/equipamentos deve listar equipamentos", async () => {
   assert.ok(Array.isArray(data));
   assert.equal(data.length, 1);
   assert.equal(data[0].codigo, "BOMBA-INFUSAO-402");
+  assert.equal(data[0].marca, "Mindray");
 });
 
-test("POST /api/equipamentos deve validar campos obrigatórios", async () => {
+test("POST /api/equipamentos deve impedir código duplicado", async () => {
   const resp = await fetch(`${baseUrl}/api/equipamentos`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ codigo: "SEM-NOME" })
+    body: JSON.stringify({ nome: "Outro", codigo: "BOMBA-INFUSAO-402" })
   });
 
   const data = await resp.json();
 
-  assert.equal(resp.status, 400);
-  assert.ok(data.error);
+  assert.equal(resp.status, 409);
+  assert.equal(data.error, "Já existe um equipamento cadastrado com este código.");
 });
 
 test("POST /api/equipamentos/:id/vincular-dispositivo deve vincular device_id", async () => {
-  // primeiro pega o equipamento cadastrado
   const listResp = await fetch(`${baseUrl}/api/equipamentos`);
   const list = await listResp.json();
   const equipamentoId = list[0].id;
@@ -118,13 +115,13 @@ test("POST /api/equipamentos/:id/vincular-dispositivo deve vincular device_id", 
   const resp = await fetch(`${baseUrl}/api/equipamentos/${equipamentoId}/vincular-dispositivo`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ device_id: "BTN-ESP32-402", descricao: "Botão da bomba 402" })
+    body: JSON.stringify({ device_id: "ESP32-UTI-402", descricao: "Botão da bomba 402" })
   });
 
   const data = await resp.json();
 
   assert.equal(resp.status, 201);
   assert.equal(data.message, "Dispositivo vinculado com sucesso.");
-  assert.equal(data.device_id, "BTN-ESP32-402");
+  assert.equal(data.device_id, "ESP32-UTI-402");
   assert.equal(data.equipamento.id, equipamentoId);
 });

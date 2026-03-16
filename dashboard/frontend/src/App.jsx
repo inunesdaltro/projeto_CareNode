@@ -1,5 +1,3 @@
-// dashboard/frontend/src/App.jsx
-
 import { useEffect, useMemo, useState } from "react";
 import DashboardPage from "./pages/DashboardPage.jsx";
 import CadastroPage from "./pages/CadastroPage.jsx";
@@ -26,15 +24,16 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    document.title = "Dashboard de Engenharia Clínica";
+    document.title = "CareNode | Engenharia Clínica";
   }, []);
 
   return (
     <div className="app">
       <aside className="sidebar">
         <div className="brand">
+          <div className="brand-kicker">CareNode</div>
           <div className="brand-title">Engenharia Clínica</div>
-          <div className="brand-subtitle">Monitoramento IoT</div>
+          <div className="brand-subtitle">Monitoramento IoT inspirado na identidade visual da Ebserh</div>
         </div>
 
         <nav className="nav">
@@ -66,6 +65,13 @@ export default function App() {
             Eventos
           </button>
         </nav>
+
+        <div className="sidebar-panel">
+          <div className="sidebar-panel-title">Como funciona</div>
+          <div className="sidebar-panel-text">
+            Cada ESP32 envia apenas o código cadastrado do equipamento e o status atual. O dashboard resolve nome, marca, modelo e setor pelo banco.
+          </div>
+        </div>
 
         <div className="sidebar-footer">
           <div className="hint">API: {apiUrl}</div>

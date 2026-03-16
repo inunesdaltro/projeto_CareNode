@@ -23,7 +23,12 @@ export default function EquipamentoCard({ equipamento }) {
       <div className="equipment-card-header">
         <div>
           <h3 className="equipment-title">{equipamento.nome}</h3>
-          <p className="equipment-subtitle">{equipamento.codigo}</p>
+          <p className="equipment-subtitle">
+            {equipamento.tipo || "Tipo não informado"}
+            {equipamento.marca || equipamento.modelo
+              ? ` · ${[equipamento.marca, equipamento.modelo].filter(Boolean).join(" / ")}`
+              : ""}
+          </p>
         </div>
 
         <div className="equipment-badges">
@@ -35,6 +40,11 @@ export default function EquipamentoCard({ equipamento }) {
       </div>
 
       <div className="equipment-grid">
+        <div>
+          <span className="equipment-label">Código</span>
+          <span className="equipment-value">{equipamento.codigo || "-"}</span>
+        </div>
+
         <div>
           <span className="equipment-label">Patrimônio</span>
           <span className="equipment-value">{equipamento.patrimonio || "-"}</span>
@@ -48,6 +58,16 @@ export default function EquipamentoCard({ equipamento }) {
         <div>
           <span className="equipment-label">Device ID</span>
           <span className="equipment-value">{equipamento.device_id || "-"}</span>
+        </div>
+
+        <div>
+          <span className="equipment-label">Marca</span>
+          <span className="equipment-value">{equipamento.marca || "-"}</span>
+        </div>
+
+        <div>
+          <span className="equipment-label">Modelo</span>
+          <span className="equipment-value">{equipamento.modelo || "-"}</span>
         </div>
 
         <div>
