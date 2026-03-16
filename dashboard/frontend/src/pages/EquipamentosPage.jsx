@@ -17,6 +17,9 @@ function filtrarEquipamentos(lista, termo) {
     const fields = [
       item.nome,
       item.codigo,
+      item.tipo,
+      item.marca,
+      item.modelo,
       item.setor,
       item.device_id,
       item.patrimonio,

@@ -20,6 +20,7 @@ function labelEvento(evt) {
   if (v === "heartbeat") return "Heartbeat";
   if (v === "status_equipamento") return "Status";
   if (v === "conectividade") return "Conectividade";
+  if (v === "telemetria_minima") return "Pacote mínimo";
   return evt || "Evento";
 }
 

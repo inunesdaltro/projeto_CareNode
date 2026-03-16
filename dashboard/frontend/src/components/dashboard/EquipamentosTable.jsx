@@ -39,6 +39,7 @@ export default function EquipamentosTable({ equipamentos = [] }) {
             <tr>
               <th>Equipamento</th>
               <th>Código</th>
+              <th>Tipo / Marca / Modelo</th>
               <th>Setor</th>
               <th>Device ID</th>
               <th>Status</th>
@@ -53,12 +54,11 @@ export default function EquipamentosTable({ equipamentos = [] }) {
               <tr key={item.id}>
                 <td>
                   <div className="table-primary">{item.nome}</div>
-                  <div className="table-secondary">
-                    {item.patrimonio || item.descricao || "-"}
-                  </div>
+                  <div className="table-secondary">{item.patrimonio || item.descricao || "-"}</div>
                 </td>
 
                 <td>{item.codigo || "-"}</td>
+                <td>{[item.tipo, item.marca, item.modelo].filter(Boolean).join(" / ") || "-"}</td>
                 <td>{item.setor || "-"}</td>
                 <td>{item.device_id || "-"}</td>
 

@@ -1,11 +1,3 @@
-// dashboard/backend/tests/eventos.test.js
-//
-// Testes simples usando node:test + fetch nativo do Node.
-// Requer Node 18+.
-//
-// Para rodar futuramente:
-// node --test tests/eventos.test.js
-
 import test from "node:test";
 import assert from "node:assert/strict";
 import http from "node:http";
@@ -57,31 +49,34 @@ let server;
 let baseUrl;
 
 test.before(async () => {
-  if (fs.existsSync(testDbPath)) {
-    fs.unlinkSync(testDbPath);
-  }
+  if (fs.existsSync(testDbPath)) fs.unlinkSync(testDbPath);
 
   const schemaPath = path.join(backendRoot, "src", "database", "schema.sql");
   const schema = fs.readFileSync(schemaPath, "utf-8");
   await execSql(schema);
 
-  // equipamento base
   await runSql(
     `
       INSERT INTO equipamentos (
         nome,
         codigo,
+        tipo,
+        marca,
+        modelo,
         patrimonio,
         setor,
         descricao,
         status_atual,
         codigo_estado_atual,
         conectividade
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `,
     [
       "Bomba de Infusão 402",
       "BOMBA-INFUSAO-402",
+      "Bomba de Infusão",
+      "Mindray",
+      "BeneFusion VP5",
       "PAT-000402",
       "UTI Adulto",
       "Equipamento de teste",
@@ -91,7 +86,6 @@ test.before(async () => {
     ]
   );
 
-  // dispositivo vinculado
   await runSql(
     `
       INSERT INTO dispositivos (
@@ -101,14 +95,11 @@ test.before(async () => {
         ativo
       ) VALUES (?, ?, ?, ?)
     `,
-    ["BTN-ESP32-402", 1, "Botão ESP32 da bomba 402", 1]
+    ["ESP32-UTI-402", 1, "Placa da bomba 402", 1]
   );
 
   server = http.createServer(app);
-
-  await new Promise((resolve) => {
-    server.listen(0, () => resolve());
-  });
+  await new Promise((resolve) => server.listen(0, resolve));
 
   const address = server.address();
   baseUrl = `http://127.0.0.1:${address.port}`;
@@ -126,21 +117,13 @@ test.after(async () => {
 
   await closeDb();
 
-  if (fs.existsSync(testDbPath)) {
-    fs.unlinkSync(testDbPath);
-  }
+  if (fs.existsSync(testDbPath)) fs.unlinkSync(testDbPath);
 });
 
-test("POST /api/iot/eventos deve receber evento de status e atualizar equipamento", async () => {
+test("POST /api/iot/eventos deve aceitar payload mínimo por código", async () => {
   const payload = {
-    device_id: "BTN-ESP32-402",
-    evento: "status_equipamento",
-    codigo_estado: 2,
-    status: "indisponivel_prioridade",
-    conectividade: "online",
-    ip: "192.168.0.50",
-    rssi: -58,
-    uptime_ms: 123456
+    c: "BOMBA-INFUSAO-402",
+    s: 2
   };
 
   const response = await fetch(`${baseUrl}/api/iot/eventos`, {
@@ -155,10 +138,9 @@ test("POST /api/iot/eventos deve receber evento de status e atualizar equipament
 
   assert.equal(response.status, 201);
   assert.equal(data.message, "Evento recebido com sucesso.");
-  assert.equal(data.equipamento.nome, "Bomba de Infusão 402");
   assert.equal(data.equipamento.codigo, "BOMBA-INFUSAO-402");
+  assert.equal(data.equipamento.matched_by, "codigo");
 
-  // confere se o dashboard já reflete o novo status
   const dashboardResponse = await fetch(`${baseUrl}/api/dashboard/resumo`);
   const dashboardData = await dashboardResponse.json();
 
@@ -169,14 +151,11 @@ test("POST /api/iot/eventos deve receber evento de status e atualizar equipament
   assert.equal(dashboardData.equipamentos[0].status_atual, "indisponivel_prioridade");
 });
 
-test("POST /api/iot/eventos deve receber heartbeat", async () => {
+test("POST /api/iot/eventos deve aceitar evento por device_id", async () => {
   const payload = {
-    device_id: "BTN-ESP32-402",
-    evento: "heartbeat",
-    conectividade: "online",
-    ip: "192.168.0.50",
-    rssi: -55,
-    uptime_ms: 130000
+    device_id: "ESP32-UTI-402",
+    codigo_estado: 1,
+    status: "manutencao_curto_prazo"
   };
 
   const response = await fetch(`${baseUrl}/api/iot/eventos`, {
@@ -190,16 +169,14 @@ test("POST /api/iot/eventos deve receber heartbeat", async () => {
   const data = await response.json();
 
   assert.equal(response.status, 201);
-  assert.equal(data.message, "Evento recebido com sucesso.");
+  assert.equal(data.equipamento.device_id, "ESP32-UTI-402");
+  assert.equal(data.equipamento.matched_by, "device_id");
 });
 
-test("POST /api/iot/eventos deve retornar 404 para device_id não vinculado", async () => {
+test("POST /api/iot/eventos deve retornar 404 para identificador desconhecido", async () => {
   const payload = {
-    device_id: "BTN-ESP32-999",
-    evento: "status_equipamento",
-    codigo_estado: 1,
-    status: "manutencao_curto_prazo",
-    conectividade: "online"
+    c: "NAO-CADASTRADO",
+    s: 1
   };
 
   const response = await fetch(`${baseUrl}/api/iot/eventos`, {
@@ -213,16 +190,13 @@ test("POST /api/iot/eventos deve retornar 404 para device_id não vinculado", as
   const data = await response.json();
 
   assert.equal(response.status, 404);
-  assert.equal(data.error, "Nenhum equipamento vinculado a este device_id");
-  assert.equal(data.device_id, "BTN-ESP32-999");
+  assert.equal(data.error, "Nenhum equipamento encontrado para o identificador informado.");
+  assert.equal(data.codigo, "NAO-CADASTRADO");
 });
 
-test("POST /api/iot/eventos deve retornar 400 quando device_id não for informado", async () => {
+test("POST /api/iot/eventos deve retornar 400 sem identificador", async () => {
   const payload = {
-    evento: "status_equipamento",
-    codigo_estado: 0,
-    status: "funcional",
-    conectividade: "online"
+    s: 0
   };
 
   const response = await fetch(`${baseUrl}/api/iot/eventos`, {
@@ -236,5 +210,5 @@ test("POST /api/iot/eventos deve retornar 400 quando device_id não for informad
   const data = await response.json();
 
   assert.equal(response.status, 400);
-  assert.equal(data.error, "device_id não informado no payload");
+  assert.equal(data.error, "Informe o código do equipamento em 'c'/'codigo' ou um 'device_id'.");
 });

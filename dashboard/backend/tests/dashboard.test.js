@@ -1,11 +1,3 @@
-// dashboard/backend/tests/dashboard.test.js
-//
-// Teste simples usando node:test + fetch nativo do Node.
-// Requer Node 18+.
-//
-// Para rodar futuramente:
-// node --test tests/dashboard.test.js
-
 import test from "node:test";
 import assert from "node:assert/strict";
 import http from "node:http";
@@ -16,16 +8,12 @@ import { fileURLToPath } from "node:url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const backendRoot = path.resolve(__dirname, "..");
-
-// Banco temporário só para teste
 const testDbPath = path.join(__dirname, "test-dashboard.sqlite");
 
-// Define env ANTES dos imports do app/db
 process.env.PORT = "3999";
 process.env.DB_PATH = testDbPath;
 process.env.OFFLINE_TIMEOUT_MS = "90000";
 
-// Importações dinâmicas após configurar env
 const { default: db } = await import("../src/config/db.js");
 const { default: app } = await import("../src/app.js");
 
@@ -60,28 +48,26 @@ let server;
 let baseUrl;
 
 test.before(async () => {
-  // Limpa banco anterior de teste, se existir
-  if (fs.existsSync(testDbPath)) {
-    fs.unlinkSync(testDbPath);
-  }
+  if (fs.existsSync(testDbPath)) fs.unlinkSync(testDbPath);
 
-  // Inicializa schema
   const schemaPath = path.join(backendRoot, "src", "database", "schema.sql");
   const schema = fs.readFileSync(schemaPath, "utf-8");
   await execSql(schema);
 
-  // Seed mínimo para dashboard
   await runSql(
     `
       INSERT INTO equipamentos (
-        nome, codigo, patrimonio, setor, descricao,
+        nome, codigo, tipo, marca, modelo, patrimonio, setor, descricao,
         status_atual, codigo_estado_atual, conectividade,
         ultimo_evento_em, ultimo_heartbeat_em
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
     `,
     [
       "Bomba de Infusão 402",
       "BOMBA-INFUSAO-402",
+      "Bomba de Infusão",
+      "Mindray",
+      "BeneFusion VP5",
       "PAT-000402",
       "UTI Adulto",
       "Equipamento de teste",
@@ -97,14 +83,11 @@ test.before(async () => {
         device_id, equipamento_id, descricao, ativo
       ) VALUES (?, ?, ?, ?)
     `,
-    ["BTN-ESP32-402", 1, "Dispositivo de teste", 1]
+    ["ESP32-UTI-402", 1, "Dispositivo de teste", 1]
   );
 
   server = http.createServer(app);
-
-  await new Promise((resolve) => {
-    server.listen(0, () => resolve());
-  });
+  await new Promise((resolve) => server.listen(0, resolve));
 
   const address = server.address();
   baseUrl = `http://127.0.0.1:${address.port}`;
@@ -122,9 +105,7 @@ test.after(async () => {
 
   await closeDb();
 
-  if (fs.existsSync(testDbPath)) {
-    fs.unlinkSync(testDbPath);
-  }
+  if (fs.existsSync(testDbPath)) fs.unlinkSync(testDbPath);
 });
 
 test("GET /api/health deve responder status ok", async () => {
@@ -150,6 +131,7 @@ test("GET /api/dashboard/resumo deve retornar resumo do parque tecnológico", as
   assert.equal(data.equipamentos.length, 1);
   assert.equal(data.equipamentos[0].nome, "Bomba de Infusão 402");
   assert.equal(data.equipamentos[0].codigo, "BOMBA-INFUSAO-402");
+  assert.equal(data.equipamentos[0].marca, "Mindray");
 });
 
 test("rota inexistente deve retornar 404", async () => {
