@@ -10,10 +10,9 @@
 // =====================================================
 const char* ssid     = "Wokwi-GUEST";
 const char* password = "";
-const char* api_url  = "http://IP_DO_MAC:3001/api/iot/eventos";
+const char* api_url  = "http://SEU_BACKEND:3001/api/iot/eventos";
 
 // Use exatamente o mesmo CÓDIGO cadastrado do equipamento no dashboard.
-// Em ESP32 real, use o IP do seu Mac na rede local; localhost não funciona no microcontrolador.
 const String codigoEquipamento = "BOMBA-INFUSAO-402";
 
 // =====================================================
